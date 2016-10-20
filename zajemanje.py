@@ -95,6 +95,7 @@ for index, sample in enumerate(data):
 			dotidx2=x.find('.', dotidx1+1)
 			month = int(x[dotidx1+1:dotidx2])-1
 			ws[month]['B'+str(index+j+1)]=x
+			ws[month].column_dimensions["B"].width = 15
 		elif(idx == 1):
 			ws[month]['A'+str(index+j+1)]=x
 		elif(idx==2):
@@ -112,6 +113,7 @@ for index, sample in enumerate(data):
 #print(data)
 #for x in data:
 #	print(x)
+
 
 wb.save(filename)
 
