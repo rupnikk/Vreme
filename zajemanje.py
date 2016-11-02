@@ -9,10 +9,10 @@ import requests
 from bs4 import BeautifulSoup
 from openpyxl import Workbook,load_workbook
 from openpyxl.styles import Font, Border, Alignment, Side
-import os
+from os import path
 
 
-filename = 'test.xlsx'
+filename = 'test1.xlsx'
 ws=[None]*12
 ws[0]=''
 
@@ -24,7 +24,7 @@ ft=Font(bold=True)
 bd1=Border(bottom=Side(border_style='thick', color='FF000000'))
 al1=Alignment(horizontal='center', vertical='center')
 
-if (os.path.isfile(filename)):
+if (path.isfile(filename)):
 	wb=load_workbook(filename)
 	for i in range(0,12):
 		ws[i]=wb.get_sheet_by_name(mesec[i])
@@ -103,7 +103,9 @@ wb.save(filename)
 url = "http://meteo.arso.gov.si/uploads/probase/www/observ/surface/text/sl/observationAms_ZADLOG_history.html"
 file_out = "zadlog_vreme.csv"
 
-text = requests.get(url).text
+anas =requests.get(url)
+anas.encoding='utf-8'
+text=anas.text
 soup = BeautifulSoup(text, 'html.parser')
 
 
@@ -150,30 +152,50 @@ for index1, tr in enumerate(table.find_all("tr")[1:]):  # skip first row
 		break
 
     data.append((date+ ' ' + time1, day, temperature_precise, humidity_precise, rainfall, rainfall_12h))
-
 data.reverse();
 
-
-
-
+empty_flag=0
+temp_index=0
+month = None
 
 for index, sample in enumerate(data):
 	for idx, x in enumerate(sample):
+		if (x==''):
+			empty_flag=1
+		else:
+			empty_flag=0
+
 		if(idx == 0):
 			dotidx1=x.find('.')
 			dotidx2=x.find('.', dotidx1+1)
+			old_month=month
 			month = int(x[dotidx1+1:dotidx2])-1
-			ws[month]['B'+str(index+j+1)]=x
+			if (old_month != month and old_month != None):
+				temp_index = index
+				j=1
+			ws[month]['B'+str(index-temp_index+j+1)]=x
 		elif(idx == 1):
-			ws[month]['A'+str(index+j+1)]=x
+			ws[month]['A'+str(index-temp_index+j+1)]=x
 		elif(idx==2):
-			ws[month]['C'+str(index+j+1)]=float(x)
+			if (empty_flag==1):
+				ws[month]['C'+str(index-temp_index+j+1)]=None
+			else:	
+				ws[month]['C'+str(index-temp_index+j+1)]=float(x)
 		elif(idx==3):
-			ws[month]['D'+str(index+j+1)]=float(x)
+			if (empty_flag==1):
+				ws[month]['D'+str(index-temp_index+j+1)]=None
+			else:
+				ws[month]['D'+str(index-temp_index+j+1)]= float(x)
 		elif(idx==4):
-			ws[month]['E'+str(index+j+1)]=float(x)
+			if (empty_flag==1):
+				ws[month]['E'+str(index-temp_index+j+1)]=None
+			else:
+				ws[month]['E'+str(index-temp_index+j+1)]= float(x)
 		elif(idx==5):
-			ws[month]['F'+str(index+j+1)]=float(x)
+			if (empty_flag==1):
+				ws[month]['F'+str(index-temp_index+j+1)]=None
+			else:
+				ws[month]['F'+str(index-temp_index+j+1)]= float(x)
 #		elif(idx==6):
 #			ws[month]['G'+str(index+j+1)]=float(x)
 #		elif(idx==7):
@@ -184,7 +206,3 @@ for index, sample in enumerate(data):
 
 
 wb.save(filename)
-
-with open(file_out, "w") as fp:
-    for d in data:
-        fp.write(", ".join(d) + "\n")
