@@ -10,9 +10,11 @@ from bs4 import BeautifulSoup
 from openpyxl import Workbook,load_workbook
 from openpyxl.styles import Font, Border, Alignment, Side
 from os import path
+from openpyxl.chart import LineChart, Series, Reference
+from openpyxl.chart.layout import Layout, ManualLayout
 
 
-filename = 'test1.xlsx'
+filename = 'zares.xlsx'
 ws=[None]*12
 ws[0]=''
 
@@ -204,5 +206,39 @@ for index, sample in enumerate(data):
 #for x in data:
 #	print(x)
 
+last_value=0
+last_value_idx=1
+ch1=[None]*12
+
+for i in range(0,12):
+	while True:
+		last_value=ws[i]['A'+str(last_value_idx)].value
+		if (last_value != None):
+			last_value_idx+=1
+		else:
+			last_value_idx-=1
+			break
+
+
+	c1 = LineChart()
+	c1.type = "col"
+	c1.title = "Line Chart"
+	c1.style = 10
+	c1.y_axis.title = 'Size'
+	c1.x_axis.title = 'Test Number'
+	c1.y_axis.axPos='t'
+	c1.legend=None
+
+
+	data = Reference(ws[i], min_col=3, min_row=1, max_row=7)
+	c1.add_data(data, titles_from_data=True)
+	data = Reference(ws[i], min_col=8, min_row=1, max_row=7)
+	c1.add_data(data, titles_from_data=True)
+	dates = Reference(ws[i], min_col=2, min_row=2, max_row=7)
+	c1.set_categories(dates)
+
+	ws[i].add_chart(c1, "I3")
+
+	last_value_idx=1
 
 wb.save(filename)
