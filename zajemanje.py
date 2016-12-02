@@ -6,31 +6,119 @@ Created on Sun Oct 16 20:45:07 2016
 """
 
 import requests
+import sys
 from bs4 import BeautifulSoup
 from openpyxl import Workbook,load_workbook
 from openpyxl.styles import Font, Border, Alignment, Side
 from os import path
 from openpyxl.chart import LineChart, Series, Reference
 from openpyxl.chart.layout import Layout, ManualLayout
+from calendar import monthrange
+from subprocess import call
 
 
-filename = 'zares.xlsx'
+
+############################################
+###############FUNKCIJE#####################
+############################################
+
+
+#funkcija, ki klicanemu datumu prišteje 10 minut in
+#vrne nov datum v isti obliki
+# vhodi: date -> string -> "dd.mm.YY (h)h:mm"
+# izhodi: new_date -> string -> "dd.mm.YY (h)h:mm"
+#			mesec -> int -> številka meseca novega datuma
+# 			flag -> int -> zastavica, ki pove če se je zgodil preskok meseca
+
+
+def rem_10(date):
+
+	#poberemo dan, mesec, leto, uro in minuto iz stringa 'date'
+	idx=date.find('.',0)
+	dan=int(date[:idx])
+
+	idx_old=idx
+	idx=date.find('.',idx+1)
+	mesec=int(date[idx_old+1:idx])
+	
+	idx_old=idx
+	idx=date.find(' ',idx+1)
+	leto=int(date[idx_old+1:idx])
+
+	idx_old=idx
+	idx=date.find(':',idx+1)
+	ura=int(date[idx_old+1:idx])
+
+
+	minuta=int(date[idx+1:])
+
+
+	#prištejemo 10 minut in nastavimo zastavico za mesec na 0
+	minuta-=10
+	flag=0
+
+	#naredimo popravke za datum(preskok v uri, datumu)
+	if(minuta==-10):
+		minuta=50
+		ura-=1
+		if(ura==-1):
+			ura=23
+			dan-=1
+			if(dan==0):
+				if(mesec==1):
+					mesec=12
+				else:
+					mesec-=1
+				day_num=monthrange(leto,mesec)[1]
+				dan=day_num
+				flag=1
+				if(mesec==12):
+					leto-=1
+	#pripravimo string novega datuma				
+	new_date=str(dan).zfill(2)+"."+str(mesec).zfill(2)+"."+str(leto)+" "+str(ura)+":"+str(minuta).zfill(2)
+	
+	return new_date, mesec, flag;
+
+
+############################################
+###################TELO#####################
+############################################
+
+
+#ime datoteke v katero shranjujemo podatke
+filename = '/home/rupnik/Documents/Projekti/Vreme/zares.xlsx'
+
+#delanje backupa
+call(["cp", "zares.xlsx", "zares_cp.xlsx"])
+#priprava spremenljivk za strani v datoteki
+#služi samo da ni kasnejših errorjev
 ws=[None]*12
 ws[0]=''
 
+#Lista imen mesecev, da jih zapišemo na ime v vsaki strani
 mesec=['Januar','Februar','Marec','April', 
 'Maj', 'Junij', 'Julij', 'Avgust', 
 'September', 'Oktober', 'November', 'December']
 
+#############################################
+#################OBLIKOVANJE#################
+#############################################
+
+#določimo krepko pisavo za naslove, mrežo in centralno postavitev
 ft=Font(bold=True)
 bd1=Border(bottom=Side(border_style='thick', color='FF000000'))
 al1=Alignment(horizontal='center', vertical='center')
 
+#Ugotovimo, če datoteka že obstaja ali ne
+#če obstaja, samo naložimo 'worksheete' v listo
 if (path.isfile(filename)):
 	wb=load_workbook(filename)
 	for i in range(0,12):
 		ws[i]=wb.get_sheet_by_name(mesec[i])
 
+
+#drugače ustvarimo nov dokument, strani, ki jih poimenujemo
+#in še drugo oblikovanje
 else:
 	wb=Workbook()
 	for i in range(0,12):
@@ -99,69 +187,197 @@ else:
 
 
 
-
+#prvič shranimo datoteko
 wb.save(filename)
 
-url = "http://meteo.arso.gov.si/uploads/probase/www/observ/surface/text/sl/observationAms_ZADLOG_history.html"
-file_out = "zadlog_vreme.csv"
 
-anas =requests.get(url)
+###################################
+###########ZAJEM PODATKOV##########
+###################################
+
+#internetna stran iz katere zajemamo podatke o vremenu
+#trenutno je nastavljena samo za to postajo, ker je če ne treba
+#nastaviti druge indekse za stolpce
+url = "http://meteo.arso.gov.si/uploads/probase/www/observ/surface/text/sl/observationAms_ZADLOG_history.html"
+#file_out = "zadlog_vreme.csv"
+
+#poskusimo pridobiti podatke iz strani
+#če je poskus neuspešen, končamo aplikacijo
+try:
+    anas =requests.get(url)
+except requests.exceptions.RequestException as e:  # This is the correct syntax
+    print e
+    sys.exit(1)
+
+#print "h"
+
+#uredimo kodiranje->lahko beremo tudi črke "č, ž, š"
 anas.encoding='utf-8'
+#pretvorba v tekst
 text=anas.text
+#ustvarimo parser?
 soup = BeautifulSoup(text, 'html.parser')
 
+#######################################
+#########BRANJE ŽE OBSTOJEČEGA#########
+#######################################
 
+#pridobivanje zadnjega podatka v datoteki
+#najprej po mesecih -> začnemo iz zadnje strani
 i=11
 while i>=0:
-	last_old_month = ws[i]['A2'].value
+	#če je druga vrstica v stolpcu za datume prazna, 
+	#je mesec prazen
+	last_old_month = ws[i]['B2'].value
 	if(last_old_month != None):
 		break
 	else:
 		i-=1
-		
+
+if(i==-1):
+	mesec=0
+else:
+	mesec=i
+#nato po podatkih -> začnemo iz 2. vrstice		
 j=2
 while True:
 	last_old_value=ws[i]['B'+str(j)].value
 	if (last_old_value != None):
 		j+=1
+	elif ((last_old_value == None) and (j==2)):
+		j-=1 
+		last_old_value="01."+str(mesec+1).zfill(2)+".2016 0:00"
+		break
 	else:
 		j-=1 
+		#preberemo datum in uro zadnjega podatka
 		last_old_value=ws[i]['B'+str(j)].value
 		break
+print last_old_value
 
-
+#ustvarimo listo podatkov
 data=[]
+#preparsanje tabele
 table = soup.table
 
+##############################
+########BRANJE PODATKOV#######
+##############################
 
 for index1, tr in enumerate(table.find_all("tr")[1:]):  # skip first row
-    tds = tr.find_all("td")
-    time = tds[0].text #  take the one without "Nedelja, "
-    idx = time.find(",")  # find index and get day, date and time separately
-    day = time[:idx]
-    #print(day)
-    date = time[idx+2:idx+12]
-    #print(date)
-    time1 = time[idx+13:idx+18]
-    #print(time1)
-    temperature_precise = tds[10].text
-    temparature = tds[11].text
-    humidity_precise = tds[12].text
-    humidity = tds[13].text
-    rainfall = tds[24].text
-    rainfall_12h = tds[26].text
-    if(date+ ' ' + time1 == last_old_value):
-		break
+	tds = tr.find_all("td")
+	time = tds[0].text #  take the one without "Nedelja, "
+	idx = time.find(",")  # find index and get day, date and time separately
+	day = time[:idx]
+	date = time[idx+2:idx+12]
+	idx1=time.find(" ",idx+10)
+	idx=time.find(":")
+	time1 = time[idx1+1:idx+3]
+	temperature_precise = tds[10].text #branje temperature z eno decimalko
+	temparature = tds[11].text #branje temperature, zaokroženo
+	humidity_precise = tds[12].text #branje vlažnosti, z eno decimalko
+	humidity 	= tds[13].text	#branje vlažnosti, brez decimalke
+	rainfall = tds[24].text	#branje padavin z eno decimalko
+	rainfall_12h = tds[26].text #branje padavin v 12h
+	new_old_value=date+ ' ' + time1
 
-    data.append((date+ ' ' + time1, day, temperature_precise, humidity_precise, rainfall, rainfall_12h))
+	#če je datum podatka enak zadnjemu vpisanemu,
+	#potem ne beremo več
+	if(index1 == 0):
+		old_value=new_old_value
+	if(new_old_value == last_old_value):
+		out_flag=1
+		break;
+
+	temp_value,a,b=rem_10(old_value)
+	print temp_value + ' ' + new_old_value
+	print str(len(temp_value)) + ' ' + str(len(new_old_value))
+	if (temp_value==new_old_value):
+	#	print 'OK'
+	control=0
+	while (1):
+		if(old_value==new_old_value):
+		#	print 's1'
+			break
+		elif(temp_value==new_old_value):
+			#print 's2'
+			break
+		else:
+			control +=1
+			print temp_value
+			data.append((temp_value, '','','', '',''))
+			temp_value,a,b=rem_10(temp_value)
+
+		if (control==100000):
+			print "exit"
+			sys.exit(1)
+			break
+
+	print '\n'
+	old_value=new_old_value
+	out_flag=0
+	#dodamo vrstico podatkov k obstoječim
+	data.append((date+ ' ' + time1, day, temperature_precise, humidity_precise, rainfall, rainfall_12h))
+
+print out_flag
+print last_old_value
+print len(last_old_value)
+
+if(out_flag==0):
+	control = 0
+	temp_value,a,b=rem_10(old_value)
+	while (1):
+		if(temp_value==last_old_value):
+			#print "h14"
+			break
+		else:
+			control +=1
+			data.append((temp_value, '','','', '',''))
+			temp_value,a,b=rem_10(temp_value)
+
+		if (control==100000):
+			print "exit"
+			sys.exit(1)
+			break
+print 'r'
+#obrnemo listo, da imamo najstarejše podatke na vrhu
 data.reverse();
+
+
+#ker lahko pride zaradi prenehanja delovanja postaje ali serverj do tega,
+# da novih podatkov ni, ali pa vmes ne oddajajo, zarati risanja grafov
+# vrinemo 'slepe' podatke, ki imajo samo datum, vrednosti pa ne
+
+#!!!!!!!! še ni testirano in ni pravilno!!!
+#while(1):
+	#iz funkcije preberemo nov datum, mesec, in če je bil preskok meseca
+#	last_old_value1, month1, zastavca=add_10(last_old_value)
+	
+	#če sploh ni novih podatkov, takrat ne napišemo nič
+#	if(last_old_value==new_old_value):
+#		break
+	#če so novi podatki, ampak tudi ni luknje v datumu, ne pišemo nič
+#	elif(last_old_value1==new_old_value):
+#		break
+#	else:
+#		if(zastavca==1):
+#			j=1
+
+#		ws[month1-1]['B'+str(j+1)]=last_old_value1
+#		last_old_value=last_old_value1
+
+
 
 empty_flag=0
 temp_index=0
 month = None
 
+#vsako vrednost v vsakem podatku zapišemo v datoteko
 for index, sample in enumerate(data):
 	for idx, x in enumerate(sample):
+		#Pogledamo, če slučajno nimamo vrednosti za podatek
+		#zaradi potrebe risanja, ker če zapišemo prazen string
+		#imamo probleme
 		if (x==''):
 			empty_flag=1
 		else:
@@ -198,47 +414,5 @@ for index, sample in enumerate(data):
 				ws[month]['F'+str(index-temp_index+j+1)]=None
 			else:
 				ws[month]['F'+str(index-temp_index+j+1)]= float(x)
-#		elif(idx==6):
-#			ws[month]['G'+str(index+j+1)]=float(x)
-#		elif(idx==7):
-#			ws[month]['H'+str(index+2)]=x
-#print(data)
-#for x in data:
-#	print(x)
-
-last_value=0
-last_value_idx=1
-ch1=[None]*12
-
-for i in range(0,12):
-	while True:
-		last_value=ws[i]['A'+str(last_value_idx)].value
-		if (last_value != None):
-			last_value_idx+=1
-		else:
-			last_value_idx-=1
-			break
-
-
-	c1 = LineChart()
-	c1.type = "col"
-	c1.title = "Line Chart"
-	c1.style = 10
-	c1.y_axis.title = 'Size'
-	c1.x_axis.title = 'Test Number'
-	c1.y_axis.axPos='t'
-	c1.legend=None
-
-
-	data = Reference(ws[i], min_col=3, min_row=1, max_row=7)
-	c1.add_data(data, titles_from_data=True)
-	data = Reference(ws[i], min_col=8, min_row=1, max_row=7)
-	c1.add_data(data, titles_from_data=True)
-	dates = Reference(ws[i], min_col=2, min_row=2, max_row=7)
-	c1.set_categories(dates)
-
-	ws[i].add_chart(c1, "I3")
-
-	last_value_idx=1
-
+#shranimo datoteko
 wb.save(filename)
