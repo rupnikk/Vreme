@@ -33,6 +33,7 @@ from calendar import monthrange
 ###################TELO#####################
 ############################################
 
+print "----------START---------\n"
 
 #ime datoteke v katero shranjujemo podatke
 filename = '/home/rupnik/Documents/Projekti/Vreme/vreme_2016.xlsx'
@@ -279,3 +280,4 @@ for index, sample in enumerate(data):
 				ws[month]['F'+str(index-temp_index+j+1)]= float(x)
 #shranimo datoteko
 wb.save(filename)
+print "-----------END-----------\n"

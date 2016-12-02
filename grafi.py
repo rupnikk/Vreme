@@ -1,9 +1,10 @@
-from openpyxl import Workbook,load_workbook
+﻿from openpyxl import Workbook,load_workbook
 from openpyxl.styles import Font, Border, Alignment, Side
 import time
 import datetime
 import matplotlib.pyplot as plt 
 import datetime
+import sys
 from numpy import arange
 from matplotlib.dates import DayLocator, HourLocator, DateFormatter
 
@@ -22,9 +23,15 @@ if(m==0):
 	m=12
 y=int(time.strftime("%Y"))
 
+#Lista imen mesecev, da jih zapišemo na ime v vsaki strani
+mesec=['Januar','Februar','Marec','April', 
+'Maj', 'Junij', 'Julij', 'Avgust', 
+'September', 'Oktober', 'November', 'December']
+
+
 #v spomin nalozimo datoteko in ustrezno stran
 wb=load_workbook(filename)
-ws=wb.worksheets[m]
+ws=wb.worksheets[m-1]
 
 #deklaracija list
 x_data=[]
@@ -77,18 +84,31 @@ while(ws['B'+str(i)].value!=None):
 
 	i+=1
 
+#kontrola za prazno stran
+if i==2:
+	print ("Prazna stran za mesec %s v letu %d" % (mesec[m-1], y))
+	sys.exit(1)
+
 #risanje grafa temperature v odvisnosti od datuma
 fig1, ax = plt.subplots()
 ax.plot_date(date, temp, 'r-')#risanje
+
 ax.xaxis.set_major_locator(DayLocator())#risanje glavnih oznak (x os)
 ax.xaxis.set_minor_locator(HourLocator(arange(0, 25, 6))) #risanje pomoznih oznak (x os)
-ax.xaxis.set_major_formatter(DateFormatter('%d.%m.%Y %H:%M'))#format oznacitve
+ax.xaxis.set_major_formatter(DateFormatter('%d.%m.%Y'))#format oznacitve
+
+ax.set_title('Temperatura - %s %d' % (mesec[m-1],y))
+ax.set_xlabel('Datum')
+ax.set_ylabel('Temperatura [$^{\circ}$C]')
+
+plt.ylim((-35,35))
+plt.grid(True)
 
 ax.fmt_xdata = DateFormatter('%d.%m.%Y %H:%M:%S')
 fig1.autofmt_xdate() #popravek za lepsi zapis (postrani)
 
 #shranitev strani
-plt.savefig('/home/rupnik/Documents/Projekti/Vreme/temp_'+str(m)+'_'+str(y)+'.png')
+plt.savefig('/home/rupnik/Documents/Projekti/Vreme/temp_'+str(m)+'_'+str(y)+'_test.png')
 
 
 #ponovimo se za vlaznost
@@ -98,11 +118,19 @@ ax.plot_date(date, hum, 'g-')
 
 ax.xaxis.set_major_locator(DayLocator())
 ax.xaxis.set_minor_locator(HourLocator(arange(0, 25, 6)))
-ax.xaxis.set_major_formatter(DateFormatter('%d.%m.%Y %H:%M'))
+
+ax.xaxis.set_major_formatter(DateFormatter('%d.%m.%Y'))#format oznacitve
+
+ax.set_title('Vlaznost - %s %d' % (mesec[m-1],y))
+ax.set_xlabel('Datum')
+ax.set_ylabel('Vlaznost [%]')
+
+plt.ylim((40,105))
+plt.grid(True)
 
 ax.fmt_xdata = DateFormatter('%d.%m.%Y %H:%M:%S')
 fig2.autofmt_xdate()
-plt.savefig('/home/rupnik/Documents/Projekti/Vreme/hum_'+str(m)+'_'+str(y)+'.png')
+plt.savefig('/home/rupnik/Documents/Projekti/Vreme/hum_'+str(m)+'_'+str(y)+'_test.png')
 
 #in padavine
 fig3, ax = plt.subplots()
@@ -111,11 +139,18 @@ ax.plot_date(date, rain, 'b-')
 
 ax.xaxis.set_major_locator(DayLocator())
 ax.xaxis.set_minor_locator(HourLocator(arange(0, 25, 6)))
-ax.xaxis.set_major_formatter(DateFormatter('%d.%m.%Y %H:%M'))
+ax.xaxis.set_major_formatter(DateFormatter('%d.%m.%Y'))#format oznacitve
+
+ax.set_title('Padavine - %s %d' % (mesec[m-1],y))
+ax.set_xlabel('Datum')
+ax.set_ylabel('Padavine [mm]')
+
+plt.ylim((-0.5,7))
+plt.grid(True)
 
 ax.fmt_xdata = DateFormatter('%d.%m.%Y %H:%M:%S')
 fig3.autofmt_xdate()
-plt.savefig('/home/rupnik/Documents/Projekti/Vreme/rain_'+str(m)+'_'+str(y)+'.png')
+plt.savefig('/home/rupnik/Documents/Projekti/Vreme/rain_'+str(m)+'_'+str(y)+'_test.png')
 
 #prikaz
-#plt.show()
+plt.show()
