@@ -1,0 +1,21 @@
+Zajem podatkov iz ARSO spletne strani za vremensko postajo Zadlog
+
+Urban Rupnik
+Zadlog 42
+5274 Črni Vrh
+
+rupnik.urban@gmail.com
+041-734-195
+
+v1.1 (prva verzija) 28.6.2017
+	- zajemanje.py in zajemanje_tedni.py za zajemanje vremena po mesecih oziroma po tednih
+
+	- nastavitve_zajemanje.py -> pot do direktorija kjer so podatki
+
+	- grafi.m izris grafov (ni vključeno samodejno), v nastavitve.m nastavljamo parametre izrisa
+
+	- klimogram.m izriše klimogram za izbrano leto
+
+	v mapah so shranjeni podatki v tabelarni obliki in v *.csv datotekah
+
+	- ostalo je test za naprej

@@ -10,7 +10,7 @@ import sys
 from bs4 import BeautifulSoup
 from openpyxl import Workbook,load_workbook
 from openpyxl.styles import Font, Border, Alignment, Side
-from os import path
+from os import path, system
 from openpyxl.chart import LineChart, Series, Reference
 from openpyxl.chart.layout import Layout, ManualLayout
 from calendar import monthrange
@@ -20,7 +20,6 @@ import datetime
 
 
 from nastavitve_zajemanje import *
-
 
 ############################################
 ###############FUNKCIJE#####################
@@ -89,16 +88,17 @@ def rem_10(date):
 ############################################
 
 
-#ime datoteke v katero shranjujemo podatke
+#število tednov v letu
+st_tednov=52
 
 #delanje backupa
 try:
-	call(["cp", direktorij+filename+".xlsx", direktorij+filename+"_cp.xlsx"])
+	call(["cp", direktorij+filename_tedni+".xlsx", direktorij+filename_tedni+"_cp.xlsx"])
 except:
 	pass
 #priprava spremenljivk za strani v datoteki
 #služi samo da ni kasnejših errorjev
-ws=[None]*12
+ws=[None]*st_tednov
 ws[0]=''
 
 #Lista imen mesecev, da jih zapišemo na ime v vsaki strani
@@ -117,22 +117,22 @@ al1=Alignment(horizontal='center', vertical='center')
 
 #Ugotovimo, če datoteka že obstaja ali ne
 #če obstaja, samo naložimo 'worksheete' v listo
-if (path.isfile(direktorij+filename+".xlsx")):
-	wb=load_workbook(direktorij+filename+".xlsx")
-	for i in range(0,12):
-		ws[i]=wb.get_sheet_by_name(mesec1[i])
+if (path.isfile(direktorij+filename_tedni+".xlsx")):
+	wb=load_workbook(direktorij+filename_tedni+".xlsx")
+	for i in range(0,st_tednov):
+		ws[i]=wb.get_sheet_by_name(str(i+1))
 
 
 #drugače ustvarimo nov dokument, strani, ki jih poimenujemo
 #in še drugo oblikovanje
 else:
 	wb=Workbook()
-	for i in range(0,12):
+	for i in range(0,st_tednov):
 		if (i==0):
 			ws[0]=wb.active
-			ws[0].title='Januar'
+			ws[0].title='1'
 		else:
-			ws[i]=wb.create_sheet(mesec1[i])
+			ws[i]=wb.create_sheet(str(i+1))
 
 		a1=ws[i]["A1"]
 		b1=ws[i]["B1"]
@@ -202,7 +202,9 @@ else:
 
 
 #prvič shranimo datoteko
-wb.save(direktorij+filename+".xlsx")
+wb.save(direktorij+filename_tedni+".xlsx")
+
+#sys.exit(1)
 
 
 ###################################
@@ -238,7 +240,7 @@ soup = BeautifulSoup(text, 'html.parser')
 
 #pridobivanje zadnjega podatka v datoteki
 #najprej po mesecih -> začnemo iz zadnje strani
-i=11
+i=st_tednov-1-1
 while i>=0:
 	#če je druga vrstica v stolpcu za datume prazna, 
 	#je mesec prazen
@@ -256,17 +258,19 @@ else:
 j=2
 while True:
 	last_old_value=ws[i]['B'+str(j)].value
+	#print last_old_value
 	if (last_old_value != None):
 		j+=1
 	elif ((last_old_value == None) and (j==2)):
 		j-=1 
-		last_old_value="01."+str(mesec+1).zfill(2)+".2017 0:00"
+		last_old_value="01."+str(mesec+1).zfill(2)+"."+leto_str+" 0:00"
 		break
 	else:
 		j-=1 
 		#preberemo datum in uro zadnjega podatka
 		last_old_value=ws[i]['B'+str(j)].value
 		break
+#print last_old_value;
 
 #ustvarimo listo podatkov
 data=[]
@@ -383,7 +387,7 @@ data.reverse();
 
 empty_flag=0
 temp_index=0
-month = None
+week = None
 
 #vsako vrednost v vsakem podatku zapišemo v datoteko
 for index, sample in enumerate(data):
@@ -399,46 +403,52 @@ for index, sample in enumerate(data):
 		if(idx == 0):
 			dotidx1=x.find('.')
 			dotidx2=x.find('.', dotidx1+1)
-			old_month=month
-			month = int(x[dotidx1+1:dotidx2])-1
-			if (old_month != month and old_month != None):
+			dotidx3=x.find(' ', dotidx2+1)
+
+			old_week=week
+			week=datetime.date(int(x[dotidx2+1:dotidx3]),int(x[dotidx1+1:dotidx2]), int(x[0:dotidx1])).isocalendar()[1]-1
+
+			#month = int(x[dotidx1+1:dotidx2])-1
+			if (old_week != week and old_week != None):
 				temp_index = index
 				j=1
-			ws[month]['B'+str(index-temp_index+j+1)]=x
+			ws[week]['B'+str(index-temp_index+j+1)]=x
 		elif(idx == 1):
-			ws[month]['A'+str(index-temp_index+j+1)]=x
+			ws[week]['A'+str(index-temp_index+j+1)]=x
 		elif(idx==2):
 			if (empty_flag==1):
-				ws[month]['C'+str(index-temp_index+j+1)]=None
+				ws[week]['C'+str(index-temp_index+j+1)]=None
 			else:	
-				ws[month]['C'+str(index-temp_index+j+1)]=float(x)
+				ws[week]['C'+str(index-temp_index+j+1)]=float(x)
 		elif(idx==3):
 			if (empty_flag==1):
-				ws[month]['D'+str(index-temp_index+j+1)]=None
+				ws[week]['D'+str(index-temp_index+j+1)]=None
 			else:
-				ws[month]['D'+str(index-temp_index+j+1)]= float(x)
+				ws[week]['D'+str(index-temp_index+j+1)]= float(x)
 		elif(idx==4):
 			if (empty_flag==1):
-				ws[month]['E'+str(index-temp_index+j+1)]=None
+				ws[week]['E'+str(index-temp_index+j+1)]=None
 			else:
-				ws[month]['E'+str(index-temp_index+j+1)]= float(x)
+				ws[week]['E'+str(index-temp_index+j+1)]= float(x)
 		elif(idx==5):
 			if (empty_flag==1):
-				ws[month]['F'+str(index-temp_index+j+1)]=None
+				ws[week]['F'+str(index-temp_index+j+1)]=None
 			else:
-				ws[month]['F'+str(index-temp_index+j+1)]= float(x)
+				ws[week]['F'+str(index-temp_index+j+1)]= float(x)
 		elif(idx==6):
 			if (empty_flag==1):
-				ws[month]['G'+str(index-temp_index+j+1)]=None
+				ws[week]['G'+str(index-temp_index+j+1)]=None
 			else:
-				ws[month]['G'+str(index-temp_index+j+1)]= float(x)			
+				ws[week]['G'+str(index-temp_index+j+1)]= float(x)			
 #shranimo datoteko
-wb.save(direktorij+filename+".xlsx")
+wb.save(direktorij+filename_tedni+".xlsx")
 
 
-for i in range(0,12):
-	with open(direktorij+'Podatki/'+str(mesec1[i])+'.csv', 'wb') as f:
+
+
+for i in range(0,st_tednov):
+	with open(direktorij+'Podatki/'+str(i+1)+'.csv', 'wb') as f:
 		c = csv.writer(f)
 		for idxrow, r in enumerate(ws[i].rows):
 			if idxrow != 0:
-				c.writerow([cell.value for cell in r[1:]])	
+				c.writerow([cell.value for cell in r[1:]])		

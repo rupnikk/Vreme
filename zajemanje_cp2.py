@@ -19,7 +19,13 @@ import csv
 import datetime
 
 
-from nastavitve_zajemanje import *
+from nastavitve_zajemanje_cp import *
+
+if(path.isdir(direktorij)==False):
+	call(["mkdir", direktorij])
+	call(["mkdir", direktorij+"Zajem"])
+	call(["mkdir", direktorij+"Podatki"])
+
 
 
 ############################################
@@ -81,7 +87,7 @@ def rem_10(date):
 	#pripravimo string novega datuma				
 	new_date=str(dan).zfill(2)+"."+str(mesec).zfill(2)+"."+str(leto)+" "+str(ura)+":"+str(minuta).zfill(2)
 	
-	return new_date, mesec, flag;
+	return new_date, mesec, flag, leto;
 
 
 ############################################
@@ -299,39 +305,54 @@ for index1, tr in enumerate(table.find_all("tr")[1:]):  # skip first row
 	#potem ne beremo več
 	if(index1 == 0):
 		old_value=new_old_value
+		c_tmp=int(date[6:10])
 	if(new_old_value == last_old_value):
 		out_flag=1
 		break;
 
-	temp_value,a,b=rem_10(old_value)
-	#print temp_value + ' ' + new_old_value
-	#print str(len(temp_value)) + ' ' + str(len(new_old_value))
-	if (temp_value==new_old_value):
+	temp_value,a,b,c=rem_10(old_value)
+
+	if(c<c_tmp):
+		file = open("nastavitve_zajemanje_cp.py", "w")
+		file.write("leto_str='"+str(c_tmp)+"'\n") 
+		file.write("direktorij='/home/urban/Documents/Projekti/Vreme/"+str(c_tmp)+"_cp/'\n")
+		file.write("filename_tedni='Zajem/vreme_tedni_'+leto_str\n")
+		file.write("filename='Zajem/vreme_'+leto_str\n")
+		file.close()	
+	else:
 		pass
-	#	print 'OK'
-	ctr=0
-	while (1):
-		if(old_value==new_old_value):
-		#	print 's1'
-			break
-		elif(temp_value==new_old_value):
-			#print 's2'
-			break
-		else:
-			ctr +=1
-			#print temp_value
-			data.append((temp_value, '','','', '',''))
-			temp_value,a,b=rem_10(temp_value)
+	
 
-		if (ctr==100000):
-			print "exit"
-			sys.exit(1)
-			break
 
-	old_value=new_old_value
-	out_flag=0
-	#dodamo vrstico podatkov k obstoječim
-	data.append((date+ ' ' + time1, day, temperature_precise, humidity_precise, rainfall, rainfall_12h,snow))
+	if(int(leto_str)==c):
+		#print temp_value + ' ' + new_old_value
+		#print str(len(temp_value)) + ' ' + str(len(new_old_value))
+		if (temp_value==new_old_value):
+			pass
+		#	print 'OK'
+		ctr=0
+		while (1):
+			if(old_value==new_old_value):
+			#	print 's1'
+				break
+			elif(temp_value==new_old_value):
+				#print 's2'
+				break
+			else:
+				ctr +=1
+				#print temp_value
+				data.append((temp_value, '','','', '',''))
+				temp_value,a,b=rem_10(temp_value)
+
+			if (ctr==100000):
+				print "exit"
+				sys.exit(1)
+				break
+
+		old_value=new_old_value
+		out_flag=0
+		#dodamo vrstico podatkov k obstoječim
+		data.append((date+ ' ' + time1, day, temperature_precise, humidity_precise, rainfall, rainfall_12h,snow))
 
 #print out_flag
 #print last_old_value
@@ -441,4 +462,6 @@ for i in range(0,12):
 		c = csv.writer(f)
 		for idxrow, r in enumerate(ws[i].rows):
 			if idxrow != 0:
-				c.writerow([cell.value for cell in r[1:]])	
+				c.writerow([cell.value for cell in r[1:]])
+
+
