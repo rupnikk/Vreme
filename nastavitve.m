@@ -2,19 +2,19 @@
 mesci=[{"Januar"; "Februar"; "Marec"; "April"; "Maj";...
  "Junij"; "Julij"; "Avgust"; "September"; "Oktober"; "November";"December"}];
 
-dan=24;
+dan=29;
 mesec=6;
 leto=2017;
 
 teden=weeknum(datenum(leto,mesec,dan));
 
-obdobje='teden';
-izris=[{"temperatura", "sneg","dez"}];
+obdobje='dan';
+izris=[{"temperatura", "sneg","dez","vlaga","dez_vsota"}];
 
-mapa='test';
+mapa='2017/Podatki';
 
 if strcmp(obdobje,'mesec') 
-	ime_datoteke=strcat(char(mapa),'/test_',char(mesci(mesec)),'.csv');
+	ime_datoteke=strcat(char(mapa),'/',char(mesci(mesec)),'.csv');
 elseif strcmp(obdobje,'teden') || strcmp(obdobje,'dan')
-	ime_datoteke=strcat(char(mapa),'/test_',num2str(teden),'.csv');
+	ime_datoteke=strcat(char(mapa),'/',num2str(teden),'.csv');
 end

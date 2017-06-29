@@ -19,3 +19,8 @@ v1.1 (prva verzija) 28.6.2017
 	v mapah so shranjeni podatki v tabelarni obliki in v *.csv datotekah
 
 	- ostalo je test za naprej
+
+	29.6.2017
+	- popravek za izris klimograma
+	- popravljen izris snežne oddeje
+	- dodan izris vsote padavin 

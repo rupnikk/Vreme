@@ -11,7 +11,7 @@ xos=[{"J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"}];
 
 for idx=1:12
 
-	ime_datoteke=strcat(char(mapa),'/test_',char(mesci(idx)),'.csv');
+	ime_datoteke=strcat(char(mapa),'/',char(mesci(idx)),'.csv');
 
 	fid = fopen(ime_datoteke);
 
@@ -22,6 +22,7 @@ for idx=1:12
 	temperatura=[{}];
 	vlaga=[{}];
 	dez=[{}];
+	dez_vsota=[{}];
 	sneg=[{}];
 
 	while ischar(tline) && (tline(1)!=',')
@@ -36,8 +37,6 @@ for idx=1:12
 		end
 		
 		dan_str=char(datum_tmp(cnt));
-
-		if strcmp(obdobje,'mesec') || strcmp(obdobje,'teden') || (strcmp(obdobje,'dan') && strcmp(num2str(dan),dan_str(1:2)))
 
 			datum(i)=datum_tmp(cnt);
 			if (find1(2)-find1(1))==1
@@ -62,13 +61,21 @@ for idx=1:12
 			end
 
 			if (find1(5)-find1(4))==1
+				dez_vsota(i)='NaN';
+			else	
+				dez_vsota(i)=A(countA);
+				countA=countA+1;
+			end
+
+			if (length(tline)-2==find1(5))
 				sneg(i)='NaN';
 			else	
 				sneg(i)=A(countA);
 				countA=countA+1;
 			end
-			i=i+1;
-		end   
+
+
+			i=i+1; 
 		cnt=cnt+1;
 		tline = fgets(fid);
 	end
@@ -78,6 +85,7 @@ for idx=1:12
 	vlaga=str2num(char(vlaga));
 	dez=str2num(char(dez));
 	sneg=str2num(char(sneg));
+	dez_vsota=str2num(char(dez_vsota));
 
 	temperatura(isnan(temperatura))=[];
 	if length(temperatura)==0
@@ -108,6 +116,13 @@ for idx=1:12
 	end
 end
 
+dez_kl(isnan(dez_kl))=[];
+if length(dez_kl)==0
+	sum_dez=0;
+else
+	sum_dez=sum(dez_kl);
+end
+
 figure
 
 bar(dez_kl,'b')
@@ -120,6 +135,8 @@ xlim([0.5 length(xos)+0.5])
 
 
 ylabel("Padavine [mm]");
+text(6.5,300,cstrcat(num2str(sum_dez)," mm"),'Color','blue','Fontsize',14,'HorizontalAlignment','center')
+
 
 hold on
 axes
