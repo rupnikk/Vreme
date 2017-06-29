@@ -1,10 +1,3 @@
-clear all;
-close all;
-
-format long
-
-run("nastavitve.m")
-
 ddata=1;
 
 st_data_day=6*24;
@@ -99,8 +92,8 @@ if strcmp(obdobje,'mesec')
 
 	if(sum(strcmp("temperatura",izris)))
 	
-		figure
-		plot(datum(1:ddata:end), temperatura(1:ddata:end))
+		figure;
+		plot(datum(1:ddata:end), temperatura(1:ddata:end));
 		ax=gca;
 		xtick=datum(1:st_data_day:end);
 		set(gca, 'xtick', xtick);
@@ -129,16 +122,17 @@ if strcmp(obdobje,'mesec')
 
 		title(cstrcat("Temperatura - ", char(mesci(mesec)),' ',num2str(leto)))
 		xlabel("Dan v mesecu")
-		ylabel("Temperatura [°C]")
+		ylabel("Temperatura [C]")
 		grid on
+		print("temperatura.jpg", '-djpg');
 
 	end
 
 
 	if(sum(strcmp("vlaga",izris)))
 
-		figure
-		plot(datum(1:ddata:end), vlaga(1:ddata:end))
+		figure;
+		plot(datum(1:ddata:end), vlaga(1:ddata:end));
 		ax=gca;
 		xtick=datum(1:st_data_day:end);
 		set(gca, 'xtick', xtick);
@@ -169,16 +163,17 @@ if strcmp(obdobje,'mesec')
 		xlabel("Dan v mesecu")
 		ylabel("Relativna vlažnost [%]")
 		grid on
+		print("vlaga.jpg", '-djpg');
 	end
 
 	if(sum(strcmp("dez",izris)))
 
-		figure
+		figure;
 		if(sum(strcmp("dez_vsota",izris)))
-			bar(datum(1:ddata:end), dez_vsota(1:ddata:end),1.0,'g')
+			bar(datum(1:ddata:end), dez_vsota(1:ddata:end),1.0,'g');
 		end
 		hold on
-		bar(datum(1:ddata:end), dez(1:ddata:end),1.0)
+		bar(datum(1:ddata:end), dez(1:ddata:end),1.0,'b');
 		
 		ax=gca;
 		xtick=datum(1:st_data_day:end);
@@ -210,13 +205,14 @@ if strcmp(obdobje,'mesec')
 		xlabel("Dan v mesecu")
 		ylabel("Padavine [mm]")
 		grid on
+		print("dez.jpg", '-djpg');
 	end
 
 	if(sum(strcmp("sneg",izris)))
 
 
-		figure
-		plot(datum(1:ddata:end), sneg(1:ddata:end))
+		figure;
+		plot(datum(1:ddata:end), sneg(1:ddata:end));
 		ax=gca;
 		xtick=datum(1:st_data_day:end);
 		set(gca, 'xtick', xtick);
@@ -243,10 +239,11 @@ if strcmp(obdobje,'mesec')
 		hnew = text(xtick, yposition, xticklabel);
 		set(hnew,'horizontalalignment','right','rotation',90);
 
-		title(cstrcat("Višina snežne odeje - ", char(mesci(mesec)),' ',num2str(leto)))
+		title(cstrcat("Visina snežne odeje - ", char(mesci(mesec)),' ',num2str(leto)))
 		xlabel("Dan v mesecu")
-		ylabel("Višina [mm]")
+		ylabel("Visina [mm]")
 		grid on
+		print("sneg.jpg", '-djpg');
 	end
 end
 
@@ -268,8 +265,8 @@ if strcmp(obdobje,'teden')
 
 	if(sum(strcmp("temperatura",izris)))
 	
-		figure
-		plot(datum(1:ddata:end), temperatura(1:ddata:end))
+		figure;
+		plot(datum(1:ddata:end), temperatura(1:ddata:end));
 		ax=gca;
 		xtick=datum(1:st_data_day:end);
 		set(gca, 'xtick', xtick);
@@ -298,14 +295,15 @@ if strcmp(obdobje,'teden')
 
 		title(cstrcat("Temperatura - Teden ", num2str(teden),' - ',num2str(leto)))
 		xlabel("Datum")
-		ylabel("Temperatura [°C]")
+		ylabel("Temperatura [C]")
 		grid on
+		print("temperatura.jpg", '-djpg');
 	end
 
 	if(sum(strcmp("vlaga",izris)))
 
-		figure
-		plot(datum(1:ddata:end), vlaga(1:ddata:end))
+		figure;
+		plot(datum(1:ddata:end), vlaga(1:ddata:end));
 		ax=gca;
 		xtick=datum(1:st_data_day:end);
 		set(gca, 'xtick', xtick);
@@ -332,20 +330,21 @@ if strcmp(obdobje,'teden')
 		hnew = text(xtick, yposition, xticklabel);
 		set(hnew,'horizontalalignment','right','rotation',90);
 
-		title(cstrcat("Relativna vlažnost - Teden ", num2str(teden),' - ',num2str(leto)))
+		title(cstrcat("Relativna vlaznost - Teden ", num2str(teden),' - ',num2str(leto)))
 		xlabel("Datum")
-		ylabel("Relativna vlažnost [%]")
+		ylabel("Relativna vlaznost [%]")
 		grid on
+		print("vlaga.jpg", '-djpg');
 	end
 
 	if(sum(strcmp("dez",izris)))
 
-		figure
+		figure;
 		if(sum(strcmp("dez_vsota",izris)))
-			bar(datum(1:ddata:end), dez_vsota(1:ddata:end),1.0,'g')
+			bar(datum(1:ddata:end), dez_vsota(1:ddata:end),1.0,'g');
 		end
 		hold on
-		bar(datum(1:ddata:end), dez(1:ddata:end),1.0)
+		bar(datum(1:ddata:end), dez(1:ddata:end),1.0,'b');
 		ax=gca;
 
 		xtick=datum(1:st_data_day:end);
@@ -377,12 +376,13 @@ if strcmp(obdobje,'teden')
 		xlabel("Datum")
 		ylabel("Padavine [mm]")
 		grid on
+		print("dez.jpg", '-djpg');
 	end
 
 	
 	if(sum(strcmp("sneg",izris)))
-		figure
-		plot(datum(1:ddata:end), sneg(1:ddata:end))
+		figure;
+		plot(datum(1:ddata:end), sneg(1:ddata:end));
 		ax=gca;
 		xtick=datum(1:st_data_day:end);
 		set(gca, 'xtick', xtick);
@@ -409,10 +409,11 @@ if strcmp(obdobje,'teden')
 		hnew = text(xtick, yposition, xticklabel);
 		set(hnew,'horizontalalignment','right','rotation',90);
 
-		title(cstrcat("Višina snežne odeje - Teden ", num2str(teden),' - ',num2str(leto)))
+		title(cstrcat("Visina snežne odeje - Teden ", num2str(teden),' - ',num2str(leto)))
 		xlabel("Datum")
-		ylabel("Višina [mm]")
+		ylabel("Visina [mm]")
 		grid on
+		print("sneg.jpg", '-djpg');
 	end
 end
 
@@ -433,8 +434,8 @@ if strcmp(obdobje,'dan')
 
 	if(sum(strcmp("temperatura",izris)))
 	
-		figure
-		plot(datum(1:ddata:end), temperatura(1:ddata:end))
+		figure;
+		plot(datum(1:ddata:end), temperatura(1:ddata:end));
 		ax=gca;
 		xtick=datum(1:st_data_hour:end);
 		set(gca, 'xtick', xtick);
@@ -463,14 +464,16 @@ if strcmp(obdobje,'dan')
 
 		title(cstrcat("Temperatura - ", num2str(dan),'.',num2str(mesec),'.',num2str(leto)))
 		xlabel("Ura")
-		ylabel("Temperatura [°C]")
+		ylabel("Temperatura [C]")
 		grid on
+
+		print("temperatura.jpg", '-djpg');
 	end
 
 	if(sum(strcmp("vlaga",izris)))
 
-		figure
-		plot(datum(1:ddata:end), vlaga(1:ddata:end))
+		figure;
+		plot(datum(1:ddata:end), vlaga(1:ddata:end));
 		ax=gca;
 		xtick=datum(1:st_data_hour:end);
 		set(gca, 'xtick', xtick);
@@ -497,21 +500,23 @@ if strcmp(obdobje,'dan')
 		hnew = text(xtick, yposition, xticklabel);
 		set(hnew,'horizontalalignment','right','rotation',90);
 
-		title(cstrcat("Relativna vlažnost - ", num2str(dan),'.',num2str(mesec),'.',num2str(leto)))
+		title(cstrcat("Relativna vlaznost - ", num2str(dan),'.',num2str(mesec),'.',num2str(leto)))
 		xlabel("Ura")
-		ylabel("Relativna vlažnost [%]")
+		ylabel("Relativna vlaznost [%]")
 		grid on
+
+		print("vlaga.jpg", '-djpg');
 	end
 
 	if(sum(strcmp("dez",izris)))
 
-		figure
+		figure;
 		if(sum(strcmp("dez_vsota",izris)))
-			bar(datum(1:ddata:end), dez_vsota(1:ddata:end),1.0,'g')
+			bar(datum(1:ddata:end), dez_vsota(1:ddata:end),1.0,'g');
 		end
 
 		hold on
-		bar(datum(1:ddata:end), dez(1:ddata:end),1.0)
+		bar(datum(1:ddata:end), dez(1:ddata:end),1.0,'b');
 		
 		ax=gca;
 		xtick=datum(1:st_data_hour:end);
@@ -543,12 +548,12 @@ if strcmp(obdobje,'dan')
 		xlabel("Ura")
 		ylabel("Padavine [mm]")
 		grid on
+		print("dez.jpg", '-djpg');
 	end
 
-
 	if(sum(strcmp("sneg",izris)))
-		figure
-		plot(datum(1:ddata:end), sneg(1:ddata:end))
+		figure;
+		plot(datum(1:ddata:end), sneg(1:ddata:end));
 		ax=gca;
 		xtick=datum(1:st_data_hour:end);
 		set(gca, 'xtick', xtick);
@@ -575,9 +580,11 @@ if strcmp(obdobje,'dan')
 		hnew = text(xtick, yposition, xticklabel);
 		set(hnew,'horizontalalignment','right','rotation',90);
 
-		title(cstrcat("Višina snežne odeje - ", num2str(dan),'.',num2str(mesec),'.',num2str(leto)))
+		title(cstrcat("Visina snezne odeje - ", num2str(dan),'.',num2str(mesec),'.',num2str(leto)))
 		xlabel("Ura")
-		ylabel("Višina [mm]")
+		ylabel("Visina [mm]")
 		grid on
+		print("sneg.jpg", '-djpg');
+
 	end
 end

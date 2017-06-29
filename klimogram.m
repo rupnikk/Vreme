@@ -1,11 +1,3 @@
-clear all;
-close all;
-
-format long
-
-run("nastavitve.m")
-
-
 xos=[{"J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"}];
 
 
@@ -166,7 +158,6 @@ set(gca,'xticklabel','');
 hnew = text(xtick, yposition, xticklabel);
 set(hnew,'horizontalalignment','right','rotation',0);
 title(cstrcat("Zadlog - ", num2str(leto)))
-ylabel("Temperatura [°C]")
-
+ylabel("Temperatura [C]")
 grid on
-
+print("klimo.jpg", '-djpg');
