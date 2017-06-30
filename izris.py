@@ -1,7 +1,7 @@
 import sys
 from PyQt4 import QtGui, QtCore
 from subprocess import call
-
+from os import path
 
 
 w=600
@@ -179,11 +179,16 @@ class Window(QtGui.QMainWindow):
 		text_file.close()
 
 	def open(self):
-		call("eog temperatura.jpg &", shell=True)
-		call("eog dez.jpg &", shell=True)
-		call("eog vlaga.jpg &", shell=True)
-		call("eog sneg.jpg &", shell=True)
-		call("eog klimo.jpg &", shell=True)
+		if(path.isfile("temperatura.jpg")):
+			call("eog temperatura.jpg &", shell=True)
+		if(path.isfile("dez.jpg")):
+			call("eog dez.jpg &", shell=True)
+		if(path.isfile("vlaga.jpg")):
+			call("eog vlaga.jpg &", shell=True)
+		if(path.isfile("sneg.jpg")):
+			call("eog sneg.jpg &", shell=True)
+		if(path.isfile("klimo.jpg")):
+			call("eog klimo.jpg &", shell=True)
 
 	def clear(self):
 		call(["rm","-f","temperatura.jpg"])
